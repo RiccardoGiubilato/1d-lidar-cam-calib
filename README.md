@@ -14,7 +14,7 @@ There are multiple ways to try the code out:
 
 ## References
 
-If you find this code useful for your projects/research, please cite the corresponding paper:
+If you find this code useful for your projects/research, please cite the corresponding papers:
 * Giubilato, R. et al. "MiniVO: Minimalistic Range Enhanced Monocular System for Scale Correct Pose Estimation", IEEE Sensors Journal, 2020
 * Giubilato, R. et al. "Scale Correct Monocular Visual Odometry Using a LiDAR Altimeter", IEEE/RSJ International Conference on Intelligent Robots and Systems, 2018
 
@@ -34,7 +34,6 @@ If you find this code useful for your projects/research, please cite the corresp
     title={Scale Correct Monocular Visual Odometry Using a LiDAR Altimeter}, 
     year={2018}, 
     pages={3694-3700}, 
-    keywords={distance measurement;image sequences;mobile robots;optical radar;robot vision;SLAM (robots);stereo image processing;stereo visual SLAM;monocular vision;inherent scale ambiguity;LiDAR altimeter;scale correct monocular visual odometry;RGB-D methods;scale drift;keyframe basis;scale constraint;mapping algorithm;keyframe based tracking;Visual Odometry method;laser altimeter;range data;exploration vehicles;power requirements;computational load;metrological accuracy;RGB-D sensors;3D LiDARs;metric references;sensory sources;Cameras;Laser radar;Measurement;Three-dimensional displays;Visual odometry;Visualization;Sensors}, 
     doi={10.1109/IROS.2018.8594096}, 
     ISSN={2153-0858}, 
     month={Oct},
