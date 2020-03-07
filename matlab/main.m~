@@ -1,0 +1,153 @@
+% Calibration camera - altimeter
+% Riccardo Giubilato
+% Dec 2018
+
+close all
+clear all
+
+clc
+
+% Image and lidar scan path (files must be listed in the same order)
+left_path = '../images/';
+scan_path = '../scans/';
+%left_path = '/home/riccardo/Documents/datasets/pidrone/alti_calibration/images/';
+%scan_path = '/home/riccardo/Documents/datasets/pidrone/alti_calibration/scans/';
+
+%% Toggles
+% Use existing camera calibration (load 'cameraCalib.mat 'from workspace)
+% or recalibrate
+
+reload_camera_calib = 1;
+mc_tests = 0;
+
+%% Process Image
+if reload_camera_calib == 1
+    load('cameraCalib.mat');
+    h2=figure; 
+    set(h2, 'renderer', 'painters')
+    showExtrinsicsMod(cameraParams, 'CameraCentric');
+else 
+    camera_calibration_script;
+end
+planes = generate_planes(cameraParams);
+
+%% Process Lidar Altimeter
+scans = read_lidar(scan_path) * 1000; % m -> mm
+scans = scans(imagesUsedCheckerboard);
+scans = scans(imagesUsedCalib);
+
+% %% Synthetic dataset
+% dgen_options.num_samples = 30;
+% dgen_options.max_angle = 60 * pi/180;
+% dgen_options.noise_range = 10; % mm
+% dgen_options.dgen_type    = 'random';
+% dgen_options.plot = true;
+% [planes, scans, h] = synt_dataset(dgen_options);
+
+%% Calibration
+[extr, res, extr0, res0, ~, ~, inliers] = calibration(planes, scans);
+
+%% MonteCarlo
+% numit = 1000;
+% N_planes = [7 10 20 30 40 50 60 66];
+% 
+% for n = 1:length(N_planes)
+%     extrv = zeros(numit, 6);
+%     parfor i=1:numit
+%        idx = randperm(length(scans), N_planes(n)); % Get indices
+%        [extrv(i,:), ~, ~, ~] = calibration(planes(:, :, idx), scans(idx));
+%        fprintf('Iteration num: %d', i);
+%     end
+%     MCtest{n} = extrv;
+% end
+% save('MCtests.mat', 'MCtest')
+
+%% Synthetic dataset tests
+if mc_tests ~= 0
+    % Vary the number of planes
+    % Fixed noise and max orientation
+    samples_test = [7 10 20 30 40 50 60 70 80 90 100];
+    numit = 100;
+    results = cell(2, length(samples_test));
+
+    for s = 1:length(samples_test)
+
+        for it = 1:numit
+            % Generate random dataset of give number of planes
+            dgen_options.num_samples = samples_test(s);
+            dgen_options.noise_range = 10; % mm
+            dgen_options.dgen_type    = 'random';
+            dgen_options.plot = false;
+            [planes, scans, h] = synt_dataset(dgen_options);
+
+            % Calibrate
+            [e, ~, e0, ~] = calibration(planes, scans);
+            results{1, s} = [results{1, s} e];
+            results{2, s} = [results{2, s} e0];
+            fprintf('Test: %d   Iteration: %d\n', s, it);
+        end
+    end
+
+    save('var_numsamples_100it.mat', 'results');
+
+    % Vary the number of planes
+    % Fixed noise and 30 samples
+    samples_angles = [10 20 30 40 50 60] * pi/180;
+    numit = 100;
+    results = cell(2, length(samples_angles));
+
+    for s = 1:length(samples_angles)
+
+        for it = 1:numit
+            % Generate random dataset of give number of planes
+            dgen_options.num_samples = 30;
+            dgen_options.max_angle = samples_angles(s);
+            dgen_options.noise_range = 10; % mm
+            dgen_options.dgen_type    = 'random';
+            dgen_options.plot = false;
+            [planes, scans, h] = synt_dataset(dgen_options);
+
+            % Calibrate
+            [e, ~, e0, ~] = calibration(planes, scans);
+            results{1, s} = [results{1, s} e];
+            results{2, s} = [results{2, s} e0];
+            fprintf('Test: %d   Iteration: %d\n', s, it);
+        end
+    end
+
+    save('var_angleplane_100it.mat', 'results');
+    
+    % Vary the number of planes
+    % Fixed noise and 30 samples
+    samples_noise = [0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30];
+    numit = 100;
+    results = cell(3, length(samples_noise));
+
+    for s = 1:length(samples_noise)
+
+        for it = 1:numit
+            % Generate random dataset of give number of planes
+            dgen_options.num_samples = 30;
+            dgen_options.max_angle = 60;
+            dgen_options.noise_range = samples_noise(s); % mm
+            dgen_options.dgen_type    = 'random';
+            dgen_options.plot = false;
+            [planes, scans, h] = synt_dataset(dgen_options);
+
+            % Calibrate
+            [e, ~, e0, ~, eLS, ~] = calibration(planes, scans);
+            results{1, s} = [results{1, s} e];
+            results{2, s} = [results{2, s} e0];
+            results{3, s} = [results{3, s} eLS];
+            fprintf('Test: %d   Iteration: %d\n', s, it);
+        end
+    end
+
+    save('var_noise_100it.mat', 'results');
+end
+
+%% Plot
+overlay_3d(h2, extr, scans);
+% overlay_imm(extr, scans, res, inliers, left_path, cameraParams,imagesUsedCheckerboard, imagesUsedCalib);
+% plots(res);
+% plot_MCviz(extrv);

@@ -1,0 +1,241 @@
+%% Evaluation of synthetic benchmark results ANGLE TEST
+addpath('./bplot')
+%close all 
+
+load('var_angleplane_100it.mat')
+
+true_orientation = [0 0 1];
+
+pos_tot_err = cell(size(results));
+ang_tot_err = cell(size(results));
+
+% Compute distance of origin after calibration from actual extrinsic
+for test = 1:size(results, 2)
+   pos_tot_err{1, test} = sqrt(sum(results{1, test}(1:3, :).^2, 1));
+   pos_tot_err{2, test} = sqrt(sum(results{2, test}(1:3, :).^2, 1));
+end
+
+% Compute angular distance from computed and true view line of the
+% altimeter
+for test = 1:size(results, 2)
+   temp_angle_ref = zeros(1, 100);
+   temp_angle_ini = zeros(1, 100);
+   for it = 1:size(results{1, test}, 2)   
+    temp_angle_ref(it) = acos(true_orientation * (results{1, test}(4:6, it) / norm(results{1, test}(4:6, it))) ) * 180 / pi;
+    temp_angle_ini(it) = acos(true_orientation * (results{2, test}(4:6, it) / norm(results{2, test}(4:6, it))) ) * 180 / pi;
+   end
+   ang_tot_err{1, test} = temp_angle_ref;
+   ang_tot_err{2, test} = temp_angle_ini;
+end
+
+%% Plots
+
+fs=14;
+
+% Boxplot [origin error] vs [plane angle max]
+bp1 = figure();
+a_ref = cell2mat(cellfun(@transpose, pos_tot_err(1, :), 'un', 0));
+a_ini = cell2mat(cellfun(@transpose, pos_tot_err(2, :), 'un', 0));
+labels = {10, 20, 30, 40, 50, 60};
+aboxplot({a_ini, a_ref}, 'Labels', labels)
+xlabel('Max orientation angle [deg]', 'Interpreter', 'latex', 'FontSize', fs)
+ylabel('Total origin error [mm]', 'Interpreter', 'latex', 'FontSize', fs)
+legend('RANSAC LS', 'LM refined', 'Interpreter', 'latex', 'FontSize', fs)
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize', fs);
+grid on
+title('\textbf{Origin error vs Max plane angle ($N_{planes}=30$)}', 'Interpreter', 'latex', 'FontSize', 14)
+set(gcf, 'Position', [680   631   385   307]);
+%drawnow, print(gcf, './orig_mangle.eps', '-depsc', '-r300')
+
+
+bp2 = figure();
+a_ref = cell2mat(cellfun(@transpose, ang_tot_err(1, :), 'un', 0));
+a_ini = cell2mat(cellfun(@transpose, ang_tot_err(2, :), 'un', 0));
+labels = {10, 20, 30, 40, 50, 60};
+aboxplot({a_ini, a_ref}, 'Labels', labels)
+xlabel('Max orientation angle [deg]', 'Interpreter', 'latex', 'FontSize', fs)
+ylabel('Total angle error [deg]', 'Interpreter', 'latex', 'FontSize', fs)
+legend('RANSAC LS', 'LM refined', 'Interpreter', 'latex', 'FontSize', fs)
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize', fs);
+grid on
+title('\textbf{Total angle error vs Max plane angle ($N_{planes}=30$)}', 'Interpreter', 'latex', 'FontSize', 14)
+set(gcf, 'Position', [680   631   385   307]); 
+%drawnow, print(gcf, './ang_mangle.eps', '-depsc', '-r300')
+
+
+
+
+
+
+
+
+%% Evaluation of synthetic benchmark results NUMBER PLANES TEST
+clear all
+%close all
+
+load('var_numsamples_100it.mat')
+fs=14;
+true_orientation = [0 0 1];
+
+pos_tot_err = cell(size(results));
+ang_tot_err = cell(size(results));
+
+% Compute distance of origin after calibration from actual extrinsic
+for test = 1:size(results, 2)
+   pos_tot_err{1, test} = sqrt(sum(results{1, test}(1:3, :).^2, 1));
+   pos_tot_err{2, test} = sqrt(sum(results{2, test}(1:3, :).^2, 1));
+end
+
+% Compute angular distance from computed and true view line of the
+% altimeter
+for test = 1:size(results, 2)
+   temp_angle_ref = zeros(1, 100);
+   temp_angle_ini = zeros(1, 100);
+   for it = 1:size(results{1, test}, 2)   
+    temp_angle_ref(it) = acos(true_orientation * (results{1, test}(4:6, it) / norm(results{1, test}(4:6, it))) ) * 180 / pi;
+    temp_angle_ini(it) = acos(true_orientation * (results{2, test}(4:6, it) / norm(results{2, test}(4:6, it))) ) * 180 / pi;
+   end
+   ang_tot_err{1, test} = temp_angle_ref;
+   ang_tot_err{2, test} = temp_angle_ini;
+end
+
+%% Plots
+
+% Boxplot [origin error] vs [plane angle max]
+bp1 = figure();
+a_ref = cell2mat(cellfun(@transpose, pos_tot_err(1, :), 'un', 0));
+a_ini = cell2mat(cellfun(@transpose, pos_tot_err(2, :), 'un', 0));
+labels = {7, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+aboxplot({a_ini, a_ref}, 'Labels', labels, 'Colorgrad', 'red_down')
+xlabel('Number of planes', 'Interpreter', 'latex', 'FontSize', fs)
+ylabel('Total origin error [mm]', 'Interpreter', 'latex', 'FontSize', fs)
+legend('RANSAC LS', 'LM refined', 'Interpreter', 'latex', 'FontSize', fs)
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize', fs);
+grid on
+title('\textbf{Origin error vs Number of planes ($\alpha_{max}=60$)}', 'Interpreter', 'latex', 'FontSize', 14)
+set(gcf, 'Position', [680   631   385   307]);
+%drawnow, print(gcf, './orig_planes.eps', '-depsc', '-r300')
+
+title('')
+%drawnow, print(gcf, './orig_planes_paper.eps', '-depsc', '-r300')
+
+bp2 = figure();
+a_ref = cell2mat(cellfun(@transpose, ang_tot_err(1, :), 'un', 0));
+a_ini = cell2mat(cellfun(@transpose, ang_tot_err(2, :), 'un', 0));
+aboxplot({a_ini, a_ref}, 'Labels', labels, 'Colorgrad', 'red_down')
+xlabel('Number of planes', 'Interpreter', 'latex', 'FontSize', fs)
+ylabel('Total angle error [deg]', 'Interpreter', 'latex', 'FontSize', fs)
+legend('RANSAC LS', 'LM refined', 'Interpreter', 'latex', 'FontSize', fs)
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize', fs);
+grid on
+title('\textbf{Angle error vs Number of planes ($\alpha_{max}=60$)}', 'Interpreter', 'latex', 'FontSize', 14)
+set(gcf, 'Position', [680   631   385   307]);
+%drawnow, print(gcf, './ang_planes.eps', '-depsc', '-r300')
+
+title('')
+%drawnow, print(gcf, './ang_planes_paper.eps', '-depsc', '-r300')
+
+
+
+
+
+
+%% Accuracy vs NOISE 
+
+clear all
+%close all
+
+load('var_noise_100it.mat')
+
+true_orientation = [0 0 1];
+
+pos_tot_err = cell(size(results));
+ang_tot_err = cell(size(results));
+
+% Compute distance of origin after calibration from actual extrinsic
+for test = 1:size(results, 2)
+   pos_tot_err{1, test} = sqrt(sum(results{1, test}(1:3, :).^2, 1));
+   pos_tot_err{2, test} = sqrt(sum(results{2, test}(1:3, :).^2, 1));
+end
+
+% Compute angular distance from computed and true view line of the
+% altimeter
+for test = 1:size(results, 2)
+   temp_angle_ref = zeros(1, 100);
+   temp_angle_ini = zeros(1, 100);
+   for it = 1:size(results{1, test}, 2)   
+    temp_angle_ref(it) = acos(true_orientation * (results{1, test}(4:6, it) / norm(results{1, test}(4:6, it))) ) * 180 / pi;
+    temp_angle_ini(it) = acos(true_orientation * (results{2, test}(4:6, it) / norm(results{2, test}(4:6, it))) ) * 180 / pi;
+   end
+   ang_tot_err{1, test} = temp_angle_ref;
+   ang_tot_err{2, test} = temp_angle_ini;
+end
+
+% Accuracy gain from LevenbergMarquardt optimization
+%% ORIGINAL
+orig_ratio  = cellfun(@mean, pos_tot_err(2, :)) ./ cellfun(@mean, pos_tot_err(1, :)) * 100 - 100;
+angle_ratio = cellfun(@mean, ang_tot_err(2, :)) ./ cellfun(@mean, ang_tot_err(1, :)) * 100 - 100;
+
+
+%% Plots
+fs =14;
+% Boxplot [origin error] vs [plane angle max]
+bp1 = figure();
+a_ref = cell2mat(cellfun(@transpose, pos_tot_err(1, :), 'un', 0));
+a_ini = cell2mat(cellfun(@transpose, pos_tot_err(2, :), 'un', 0));
+labels = {0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30};
+aboxplot({a_ini, a_ref}, 'Labels', labels, 'Colorgrad', 'green_down')
+xlabel('$\sigma$ of Gaussian noise added to range [mm]', 'Interpreter', 'latex', 'FontSize', fs)
+ylabel('Total origin error [mm]', 'Interpreter', 'latex', 'FontSize', fs)
+legend('RANSAC LS', 'LM refined', 'Interpreter', 'latex', 'FontSize', fs)
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize', fs);
+grid on
+title('\textbf{Origin error vs Noise ($\alpha_{max}=60 \ N_{planes}=30$)}', 'Interpreter', 'latex', 'FontSize', 14)
+set(gcf, 'Position', [ 176   550   636   307])
+drawnow;
+print(gcf, './orig_noise.eps', '-depsc', '-r300')
+
+title('')
+drawnow, print(gcf, './orig_noise_paper.eps', '-depsc', '-r300')
+
+bp2 = figure();
+a_ref = cell2mat(cellfun(@transpose, ang_tot_err(1, :), 'un', 0));
+a_ini = cell2mat(cellfun(@transpose, ang_tot_err(2, :), 'un', 0));
+aboxplot({a_ini, a_ref}, 'Labels', labels, 'Colorgrad', 'green_down')
+xlabel('$\sigma$ of Gaussian noise added to range [mm]', 'Interpreter', 'latex', 'FontSize', fs)
+ylabel('Total angle error [deg]', 'Interpreter', 'latex', 'FontSize', fs)
+legend('RANSAC LS', 'LM refined', 'Interpreter', 'latex', 'FontSize', fs)
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize', fs);
+grid on
+title('\textbf{Angular error vs Noise ($\alpha_{max}=60 \ N_{planes}=30$)}', 'Interpreter', 'latex', 'FontSize', 14)
+set(gcf, 'Position', [ 176   550   636   307])
+%print(gcf, './ang_noise.eps', '-depsc', '-r300')
+
+title('')
+drawnow % print(gcf, './ang_noise_paper.eps', '-depsc', '-r300')
+%Plot2LaTeX(bp2 , 'ang_noise_paper' )
+
+ha = figure;
+histogram(angle_ratio, 'Normalization', 'probability')
+xlabel('Gain [\%]', 'Interpreter', 'latex', 'FontSize', fs)
+ylabel('P = $(N/N_{tot})$', 'Interpreter', 'latex', 'FontSize', fs)
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize', fs);
+title('\textbf{Angular accuracy gain}', 'Interpreter', 'latex', 'FontSize', 16)
+set(gcf, 'Position', [300 700 385   307]);
+drawnow, print(gcf, './angle_gain.eps', '-depsc', '-r300')
+title('')
+drawnow,% print(gcf, './orig_planes_paper.eps', '-depsc', '-r300')
+
+ho = figure;
+histogram(orig_ratio, 'Normalization', 'probability')
+xlabel('Gain [\%]', 'Interpreter', 'latex', 'FontSize', fs)
+ylabel('P = $(N / N_{tot})$', 'Interpreter', 'latex', 'FontSize', fs)
+set(gca, 'TickLabelInterpreter', 'latex', 'FontSize', fs);
+title('\textbf{Origin accuracy gain}', 'Interpreter', 'latex', 'FontSize', 16)
+set(gcf, 'Position', [300 300 385   307]);
+drawnow, print(gcf, './orig_gain.eps', '-depsc', '-r300')
+title('')
+% print(gcf, './orig_gain_paper.eps', '-depsc', '-r300')
+
+
+
