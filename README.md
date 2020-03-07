@@ -39,3 +39,7 @@ If you find this code useful for your projects/research, please cite the corresp
     month={Oct},
 }
 ```
+
+### Compatibility
+Tested with Matlab 2018b. 
+Earlier versions might be incompatible with plot/legend functions.
