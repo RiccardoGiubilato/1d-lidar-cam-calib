@@ -1,6 +1,10 @@
 # 1D RangeFinder - Camera calibration
 
-Extrinsic calibration for single point rangefinder (LiDAR altimeter) and monocular vision systems.
+Extrinsic calibration for single point rangefinder (LiDAR altimeter) and monocular vision systems. 
+  - The laser beam is supposed to be **not visibile** in the camera images (tested with 900 nm laser and camera with infrared filter).
+  - The laser is supposed to hit a planar target with a checkerboard pattern attached. See examples.
+  - Required are N>5 pairs of images and range values.
+  - It is returned the oriented segment (of unit length) that represent the center of the range finder+ direction w.r.t the camera optical frame.
 
 <img src="readme_img/alti_cam_fade.png" height="150"/> <img src="readme_img/alti_extr.png" height="150"/> 
 
